@@ -15,7 +15,9 @@ this is a Task manager app. To help manage your taskas or todos
 ## Getting Started
 
 To get a local clone this repository : https://github.com/MicroverseNelson/Tod-doList
-
+- run npm init
+- run npm buid 
+- run npm start
 ### Prerequisites
 
 Use any platform with html, css, and JavaScript. To buils this project, I used Visual Studio.

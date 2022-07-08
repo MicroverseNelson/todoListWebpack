@@ -1,125 +1,86 @@
-import './style.css';
-import { updateStatus } from './status';
-import { load } from './data';
-import { makeContainer, makeDrageable } from './drag';
 import {
-  addActivity,
-  ShowAll,
-  removeCompleteds,
-  saveone,
-  removeone,
-} from './addEditRemove';
+  createLocalStorage,
+  addData,
+  getData,
+  deleteTask,
+  updateOneTask,
+} from './services.js';
+import './style.css';
 
-let todolist = [];
-if (localStorage.getItem('information') === null) {
-  localStorage.setItem('information', '[]');
+const list = document.querySelector('.todo_list');
+const taskInput = document.querySelector('#task_input');
+const taskForm = document.querySelector('#task_form');
+
+function createTaskElement(description, index, completed = false) {
+  const li = document.createElement('li');
+  li.classList.add('item');
+
+  li.innerHTML = `<div id="task_item" class="group"><input type="checkbox" ${
+    completed && 'checked'
+  }/>  <input class="reset-input" data-index="${index}" type="text" disabled value="${description}" />
+         </div> 
+                    <i class="fa-solid fa-ellipsis-vertical" id="move_task"></i>
+                    <i class="fa-solid fa-trash icon_hide" data-id="${index}" id="delete_task"></i>`;
+  return li;
 }
-class Tasks {
-  constructor() {
-    this.toDoList = null;
-  }
 
-  setTodo(todolist) {
-    this.todo = todolist;
-  }
-
-  getTodo() {
-    return this.todo;
-  }
+function displayAllTasks() {
+  const tasks = getData('tasks');
+  tasks.forEach(({ description, index, completed }) => {
+    const li = createTaskElement(description, index, completed);
+    list.appendChild(li);
+  });
 }
-const lists = new Tasks();
-const todoDiv = document.querySelector('.lists');
-makeContainer(todoDiv);
-let i = 0;
-const getTodoList = () => {
-  todolist.forEach((list) => {
-    const li = document.createElement('li');
-    makeDrageable(li);
-    li.classList.add('list');
-    li.classList.add('draggable');
-    li.id = i;
-    li.draggable = true;
-    const liDiv = document.createElement('div');
-    liDiv.classList.add('li-div');
-    // create checkbox
-    const checkbox = document.createElement('input');
-    checkbox.classList.add('checkbox');
-    checkbox.type = 'checkbox';
-    checkbox.checked = list.completed;
-    liDiv.appendChild(checkbox);
-    // create description
-    const desc = document.createElement('input');
-    desc.classList.add('desc');
-    desc.value = list.description;
-    desc.onchange = () => {
-      saveone(desc);
-    };
-    liDiv.appendChild(desc);
-    checkbox.addEventListener('change', function check() {
-      if (this.checked) {
-        desc.classList.add('line');
-      } else {
-        desc.classList.remove('line');
+
+taskForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  if (taskInput.value.trim() === '') return;
+
+  const index = getData('tasks').length + 1;
+  const task = { description: taskInput.value, index, completed: false };
+
+  addData(task);
+
+  const li = createTaskElement(task.description, index, false);
+  list.appendChild(li);
+
+  taskInput.value = '';
+});
+
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'task_item') {
+    const deleteTaskBtn = e.target.parentElement.querySelector('#delete_task');
+    const moveTaskBtn = e.target.parentElement.querySelector('#move_task');
+    const inputTask = e.target.parentElement.querySelector('.reset-input');
+    moveTaskBtn.classList.toggle('icon_hide');
+    deleteTaskBtn.classList.toggle('icon_hide');
+
+    // TODO: this is for update the text of input
+    inputTask.removeAttribute('disabled');
+    inputTask.focus();
+
+    inputTask.addEventListener('keyup', (e) => {
+      const { index } = inputTask.dataset;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        inputTask.setAttribute('disabled', 'true');
       }
-    });
-    li.appendChild(liDiv);
-    // create 3 vertical dots
-    const dots = document.createElement('i');
-    dots.classList.add('fa');
-    dots.classList.add('fa-ellipsis-v');
-    li.appendChild(dots);
-    todoDiv.appendChild(li);
-    // create trashcan
-    const trash = document.createElement('i');
-    trash.classList.add('fa');
-    trash.id = `trashcan${i}`;
-    trash.classList.add('fa-trash');
-    trash.addEventListener('click', () => {
-      todolist = removeone(trash);
-      ShowAll(todoDiv);
-      window.location.reload();
-    });
-    dots.addEventListener('click', () => {
-      dots.classList.add('hidden');
-      trash.classList.remove('hidden');
-    });
-    trash.classList.add('hidden');
-    li.appendChild(trash);
-    todoDiv.appendChild(li);
-    i += 1;
-  });
-  const cbox = document.querySelectorAll('.checkbox');
-  cbox.forEach((chbox) => {
-    chbox.addEventListener('change', updateStatus);
-  });
-};
-const todoInput = document.getElementById('todo-input');
-todoInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    addActivity(todoInput.value);
-    ShowAll(todoDiv);
-    const get = load();
-    lists.setTodo(get);
-    window.location.reload();
-  }
-});
-const clearBtn = document.getElementById('btn');
-clearBtn.addEventListener('click', () => {
-  removeCompleteds();
-  const get = load();
-  ShowAll(todoDiv);
-  lists.setTodo(get);
-  window.location.reload();
-});
-window.addEventListener('DOMContentLoaded', () => {
-  if (localStorage.getItem('information')) {
-    todolist = JSON.parse(localStorage.getItem('information'));
-  } else {
-    localStorage.setItem(
-      'information',
-      JSON.stringify(todolist.sort((a, b) => +a.index - +b.index)),
-    );
-  }
 
-  getTodoList(todolist.sort((a, b) => +a.index - +b.index));
+      updateOneTask(index, inputTask.value);
+    });
+  } else if (e.target && e.target.id === 'delete_task') {
+    const taskId = e.target.dataset.id;
+    deleteTask(taskId);
+    e.target.parentNode.remove(); // remove the task in the browser
+
+    list.innerHTML = '';
+    displayAllTasks();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  createLocalStorage('tasks', []);
+  displayAllTasks();
 });
