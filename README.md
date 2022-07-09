@@ -20,7 +20,7 @@ To get a local clone this repository : https://github.com/MicroverseNelson/Tod-d
 - run npm start
 ### Prerequisites
 
-Use any platform with html, css, and JavaScript. To buils this project, I used Visual Studio.
+Should have knowledge of the following technologie :- html, css, and JavaScript. To buils this project, I used Visual Studio.
 
 ## Author
 
