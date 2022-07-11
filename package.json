@@ -25,13 +25,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bahoz-ali/todo_list.git"
+    "url": "git+https://microversenelson.github.io/todoListWebpack/"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/bahoz-ali/todo_list/issues"
+    "url": "https://github.com/microversenelson/todoListWebpack/issues"
   },
-  "homepage": "https://github.com/bahoz-ali/todo_list#readme"
+  "homepage":"https://microversenelson.github.io/todoListWebpack/"
 }
